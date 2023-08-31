@@ -1,76 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Aug  7 18:33:39 2023
 
-#%%
-# Import libraries
-
-import os
-import re
-import numpy as np
-from helper_preprocess import trainingDFs, readcsvs_concatdf
-
-#rootdir = "C:\\Users\\Lab\\Box\\Seanez_Lab\\SharedFolders\\RAW DATA\\Excitability"
-rootdir = "C:\\Users\\marie\\Box\\Seanez_Lab\\SharedFolders\\RAW DATA\\Excitability"
-
-subject_folders = os.listdir(rootdir)
-subject_keypaths = [[]] * len(subject_folders)
-
-for i in range(len(subject_folders)):
-    #subject_keypaths[i] = 'test'
-    subject_dir = os.path.join(rootdir, subject_folders[i])
-    print(subject_dir)
-    for subject_dir, dirs, files in os.walk(subject_dir):
-        for subdir in dirs:
-            print(subdir)
-            subject_keypaths[i].append(os.path.join(subject_dir, subdir))
-            print(os.path.join(subject_dir, subdir))
-            
-#work on adding keypaths to different sections of the list
-
-
-SID_list = []
-key_paths = []
-for rootdir, dirs, files in os.walk(rootdir):
-    #print("directory", dirs)
-    for subdir in dirs:
-        #print("subdirectory", subdir)
-        regex = "[0-9]{8}$"
-        ID_datecheck = re.findall(regex, subdir)
-        if ID_datecheck:
-            key_paths.append(os.path.join(rootdir, subdir))
-            #print(key_paths)
-        else: 
-            SID_list.append(subdir)
-
-print("Walking through keypaths.")
-#print(key_paths)
-#print(SID_list)
-df_ActSCS, idxs_ActSCS, df_ActRest, idxs_ActRest, df_SCS, idxs_SCS  = trainingDFs(key_paths)
-print("Pulled all necessary dataframes.")
-
-#%%
-print("Test. Getting fwave and tms indices")
-
-fwave_names = []
-tms_names = []
-
-for index in idxs_ActSCS:
-    regex = "fwave"
-    namecheck = re.findall(regex, index)
-    if namecheck:
-        fwave_names.append(index)
-    else:
-        print("")
-    
-    rg = "tms"
-    name = re.findall(rg, index)
-    if name:
-        tms_names.append(index)
-    else:
-        print("")
-    
-print("FWAVES", fwave_names)
-print("TMS", tms_names)
-
-print("Done")
+@author: marie
+"""
 
 #%%
 import numpy as np
@@ -80,20 +13,21 @@ from scipy.signal import find_peaks
 print("FWAVE PRE: Read in pre dataframe and muscle specifics")
 
 #in future call from fwave_names list or tms_names list
-df1 = df_ActSCS.loc['EX001_20230726_F_Waves_fwavepre_ActSCS']
+df1 = df_SCS.loc['EX001_20230721_F_Waves_fwavepre_SCS']
 #pull RTA and trigger data
 RTA = np.array(df1['R Tibialis Anterior'])
 TRIG = np.array(df1['Trigger'])
 
+#%%
 RTA = RTA[30000:]
 TRIG = TRIG[30000:] * -1
 
-height = np.mean(TRIG) + (3*np.std(TRIG[350000:])) #height requirement for peak detection
+height = np.mean(TRIG) + (3*np.std(TRIG[400000:])) #height requirement for peak detection
 peaks, _ = find_peaks(TRIG, height=height, distance=500)
 
 print("Plot trigger peak identification")
 plt.plot(TRIG) #plot trigger signal
-plt.plot(peaks, TRIG[peaks], "x", markersize = 5) #plot markers on peaks
+plt.plot(peaks, TRIG[peaks], "x", markersize = 10) #plot markers on peaks
 plt.axhline(y=height, linestyle = '--', color = 'k')
 
 #%%
@@ -117,10 +51,10 @@ for i in range(len(peaks)):
              color = 'gray', alpha=0.8)
     trials_pre.append((RTA[starting_idx[i]:ending_idx[i]])+offset[i]) 
     
-plt.title("All Traces EX001 Fwave Pre ActSCS")
+plt.title("All Traces EX001 Fwave Pre SCS")
 plt.xlabel("ms")
 plt.ylabel("V")
-plt.savefig("EX001_FWaves_PRE_ActSCS.png", format="png", dpi=1200, bbox_inches = 'tight')
+plt.savefig("EX001_FWaves_PRE_SCS.png", format="png", dpi=1200, bbox_inches = 'tight')
 
 
 #%%
@@ -140,7 +74,6 @@ offset = np.linspace(0,0.0012,60)
 fs = 4400
 amplitude_pre = []
 three_idxs = []
-
 
 for i in range(len(trials_pre)):
     cb = trials_pre[i]
@@ -165,7 +98,6 @@ for i in range(len(trials_pre)):
         lowerPeaks = np.zeros((2,2))
         
     plt.figure(3, figsize=(7,12))
-
     plt.plot(time, cb, color="gray", linewidth=0.8, alpha=0.8)
     #plt.plot(higherPeaks[:,0], higherPeaks[:,1], 'ro')
     #plt.plot(lowerPeaks[:,0], lowerPeaks[:,1], 'ko')
@@ -208,7 +140,7 @@ for i in range(len(trials_pre)):
     
     if value_pre >= 20 or value_post >= 20: #uV
 
-        plt.plot(time[max_index], cb[max_index], "x", color = "red", markersize = 5)
+        plt.plot(time[max_index], cb[max_index], "x", color = "red", markersize = 10)
         plt.plot(time[previous_max_index], cb[previous_max_index], "o", color = "green", markersize = 5, alpha = 0.5)
         plt.plot(time[post_max_index], cb[post_max_index], "o", color = "blue", markersize = 5)
         plt.plot(time[previous_max_index:post_max_index+1], cb[previous_max_index:post_max_index+1], color = "k")
@@ -218,7 +150,7 @@ for i in range(len(trials_pre)):
         
          
 
-    plt.title("EX001 Pre Fwave Identification: ActSCS")
+    plt.title("EX001 Pre Fwave Identification: SCS")
     plt.xlabel("ms")
     plt.ylabel("V")
     
@@ -232,7 +164,7 @@ for i in range(len(trials_pre)):
 
 persistance_pre = (len(amplitude_pre))/60 * 100
 print("_______________________________________")
-print("EX001 Fwave Persisstance and Amplitude Pre Test for ActSCS")
+print("EX001 Fwave Persisstance and Amplitude Pre Test for SCS")
 #print("Persistance: ", persistance_pre, "%")
 amp_df_pre = pd.DataFrame(amplitude_pre)
 means_pre = amp_df_pre.mean()
@@ -245,7 +177,7 @@ pers = "Persistance: " + str(round(persistance_pre, 2)) + "%"
 print(pers)
 
 ax.text(23, 0.001, amp + "\n" + pers, bbox=dict(facecolor='white'))
-plt.savefig("EX001_20230726_FWaves_PRE_ActSCS.png", format="png", dpi=1200, bbox_inches = 'tight')
+plt.savefig("EX001_20230721_FWaves_PRE_SCS.png", format="png", dpi=1200, bbox_inches = 'tight')
 
 
 #%%
@@ -265,7 +197,7 @@ plt.savefig("EX001_20230726_FWaves_PRE_ActSCS.png", format="png", dpi=1200, bbox
 print("FWAVE POST: Read in pre dataframe and muscle specifics")
 
 #in future call from fwave_names list or tms_names list
-df1 = df_ActSCS.loc['EX001_20230726_F_Waves_fwavepost_ActSCS']
+df1 = df_SCS.loc['EX001_20230721_F_Waves_fwavepost_SCS']
 #pull RTA and trigger data
 RTA = np.array(df1['R Tibialis Anterior'])
 TRIG = np.array(df1['Trigger'])
@@ -274,7 +206,7 @@ TRIG = np.array(df1['Trigger'])
 RTA = RTA[10000:]
 TRIG = TRIG[10000:] * -1
 
-height = np.mean(TRIG) + (3*np.std(TRIG[300000:])) #height requirement for peak detection
+height = np.mean(TRIG) + (3*np.std(TRIG[400000:])) #height requirement for peak detection
 peaks, _ = find_peaks(TRIG, height=height, distance=500)
 
 print("Plot trigger peak identification")
@@ -301,13 +233,12 @@ trials_pre = []
 for i in range(len(peaks)):
     plt.plot(x,(RTA[starting_idx[i]:ending_idx[i]])+offset[i],linewidth = .8,
              color = 'gray', alpha=0.8)
-    trials_pre.append((RTA[starting_idx[i]:ending_idx[i]])+offset[i]) 
-
-plt.title("All Traces EX001 Fwave Post ActSCS")
+    trials_pre.append((RTA[starting_idx[i]:ending_idx[i]])+offset[i])
+    
+plt.title("All Traces EX001 Fwave POST SCS")
 plt.xlabel("ms")
 plt.ylabel("V")
-plt.savefig("EX001_FWaves_POST_ActSCS.png", format="png", dpi=1200, bbox_inches = 'tight')
-
+plt.savefig("EX001_FWaves_POST_SCS.png", format="png", dpi=1200, bbox_inches = 'tight')
 
 
 #%%
@@ -337,6 +268,7 @@ for i in range(len(trials_pre)):
     cb = y + offset[i]
     
     
+    
     # rest_period = np.average(cb[0:20])
     # print("rest", rest_period)
     peaks = peakdetect(cb, lookahead=10)
@@ -350,7 +282,7 @@ for i in range(len(trials_pre)):
     if len(lowerPeaks) == 0:
         lowerPeaks = np.zeros((2,2))
         
-    plt.figure(3,  figsize=(7,12))
+    plt.figure(3, figsize=(7,12))
     plt.plot(time, cb, color="gray", linewidth=0.8, alpha=0.8)
     #plt.plot(higherPeaks[:,0], higherPeaks[:,1], 'ro')
     #plt.plot(lowerPeaks[:,0], lowerPeaks[:,1], 'ko')
@@ -393,7 +325,7 @@ for i in range(len(trials_pre)):
     
     if value_pre >= 20 or value_post >= 20: #uV
 
-        plt.plot(time[max_index], cb[max_index], "x", color = "red", markersize = 5)
+        plt.plot(time[max_index], cb[max_index], "x", color = "red", markersize = 10)
         plt.plot(time[previous_max_index], cb[previous_max_index], "o", color = "green", markersize = 5, alpha = 0.5)
         plt.plot(time[post_max_index], cb[post_max_index], "o", color = "blue", markersize = 5)
         plt.plot(time[previous_max_index:post_max_index+1], cb[previous_max_index:post_max_index+1], color = "k")
@@ -403,7 +335,7 @@ for i in range(len(trials_pre)):
         
          
 
-    plt.title("EX001 POST Fwave Identification: ActSCS")
+    plt.title("EX001 POST Fwave Identification: SCS")
     plt.xlabel("ms")
     plt.ylabel("V")
     
@@ -417,7 +349,7 @@ for i in range(len(trials_pre)):
 
 persistance_pre = (len(amplitude_pre))/60 * 100
 print("_______________________________________")
-print("EX001 Fwave Persisstance and Amplitude Pre Test for ActSCS")
+print("EX001 Fwave Persisstance and Amplitude POST Test for SCS")
 #print("Persistance: ", persistance_pre, "%")
 amp_df_pre = pd.DataFrame(amplitude_pre)
 means_pre = amp_df_pre.mean()
@@ -430,7 +362,7 @@ pers = "Persistance: " + str(round(persistance_pre, 2)) + "%"
 print(pers)
 
 ax.text(23, 0.001, amp + "\n" + pers, bbox=dict(facecolor='white'))
-plt.savefig("EX001_20230726_FWaves_POST_ActSCS.png", format="png", dpi=1200, bbox_inches = 'tight')
+plt.savefig("EX001_20230721_FWaves_POST_SCS.png", format="png", dpi=1200, bbox_inches = 'tight')
 
 #%%
 
@@ -448,16 +380,16 @@ plt.savefig("EX001_20230726_FWaves_POST_ActSCS.png", format="png", dpi=1200, bbo
 print("TMS pre: Read in pre dataframe and muscle specifics")
 
 #in future call from fwave_names list or tms_names list
-df1 = df_ActSCS.loc['EX001_20230726_TMS_tmspre_ActSCS']
+df1 = df_SCS.loc['EX001_20230721_TMS_tmspre_SCS']
 #pull RTA and trigger data
 RTA = np.array(df1['R Tibialis Anterior'])
 TRIG = np.array(df1['Trigger'])
 
 #%%
-RTA = RTA[2500000:]
-TRIG = TRIG[2500000:] * -1
+#RTA = RTA[2500000:]
+TRIG = TRIG * -1
 
-height = np.mean(TRIG) + (3*np.std(TRIG[:200000])) #height requirement for peak detection
+height = np.mean(TRIG) + (3*np.std(TRIG[:1000000])) #height requirement for peak detection
 peaks, _ = find_peaks(TRIG, height=height, distance=500)
 
 print("Plot trigger peak identification")
@@ -485,10 +417,10 @@ for i in range(len(peaks)):
              color = 'gray', alpha=0.8)
     trials_pre.append((RTA[starting_idx[i]:ending_idx[i]])+offset[i])
     
-plt.title("All Traces EX001 MEP PRE ActSCS")
+plt.title("All Traces EX001 MEP PRE SCS")
 plt.xlabel("ms")
 plt.ylabel("V")
-plt.savefig("EX001_TMS_PRE_ActSCS.png", format="png", dpi=1200, bbox_inches = 'tight')
+plt.savefig("EX001_TMS_PRE_SCS.png", format="png", dpi=1200, bbox_inches = 'tight')
 
 
     
@@ -506,7 +438,8 @@ previous_list = []
 post_list = []
 max_idx_list = []
 MEPS = []
-offset = np.linspace(0,0.003,30)
+offset = np.linspace(0,0.002,30)
+
 fig, ax = plt.subplots(figsize=(7,12))
 
 
@@ -585,7 +518,7 @@ for i in range(len(trials_pre)):
     
     if value_pre >= 50 or value_post >= 50:
 
-        plt.plot(time[max_index], cb[max_index], "x", color = "red", markersize = 5)
+        plt.plot(time[max_index], cb[max_index], "x", color = "red", markersize = 10)
         
         onset_line = true_idx[i]
         end_line = endddd[i]
@@ -603,7 +536,7 @@ for i in range(len(trials_pre)):
 
     
 
-    plt.title("EX001 Pre MEP Identification: ActSCS")
+    plt.title("EX001 Pre MEP Identification: SCS")
     plt.xlabel("ms")
     plt.ylabel("V")
     ax = plt.gca()
@@ -617,7 +550,7 @@ for i in range(len(trials_pre)):
     #plt.show()
 
 print("_______________________________________")
-print("EX001 MEP Amplitude Pre Test: ActSCS")
+print("EX001 MEP Amplitude Pre Test: SCS")
 
 amp_df_pre = pd.DataFrame(amplitude_pre, columns=['MEP', 'Time'])
 means_pre = amp_df_pre.mean()
@@ -630,7 +563,7 @@ print(pers)
 
 ax.text(75, 0.0017, amp + "\n" + pers, bbox=dict(facecolor='white'))
 
-plt.savefig("EX001_20230726_TMS_PRE_ActSCS.png", format="png", dpi=1200, bbox_inches = 'tight')
+plt.savefig("EX001_20230721_TMS_PRE_SCS.png", format="png", dpi=1200, bbox_inches = 'tight')
 
 
 #%%EX001 PRE DERIVATIVE
@@ -667,7 +600,7 @@ for i in range(len(trials_pre)):
     
     numpyDiff_post = np.diff(flipped)/np.diff(time_post)
     
-    idx3 = np.where(abs(numpyDiff_post)>0.000014)[0][0]
+    idx3 = np.where(abs(numpyDiff_post)>0.00002)[0][0]
     endddd.append(idx_end_post-idx3)
     plt.figure(25)
     time_post = np.linspace(0, total_time_post*1000, len(y_post)-1) 
@@ -678,7 +611,7 @@ for i in range(len(trials_pre)):
     plt.figure(22)
     time = np.linspace(0, total_time*1000, len(y_diff)-1) 
     plt.plot(time,numpyDiff, color = "gray", alpha = 0.5)    
-    idx2 = np.where(abs(numpyDiff)>0.000014)[0][0]
+    idx2 = np.where(abs(numpyDiff)>0.00002)[0][0]
     plt.plot(time[idx2], numpyDiff[idx2], "x", color="red")
     true_idx.append(idx_start+idx2) 
 
@@ -699,7 +632,7 @@ for i in range(len(trials_pre)):
 print("TMS POST: Read in pre dataframe and muscle specifics")
 
 #in future call from fwave_names list or tms_names list
-df1 = df_ActSCS.loc['EX001_20230726_TMS_tmspost_ActSCS']
+df1 = df_SCS.loc['EX001_20230721_TMS_tmspost_SCS']
 #pull RTA and trigger data
 RTA = np.array(df1['R Tibialis Anterior'])
 TRIG = np.array(df1['Trigger'])
@@ -736,12 +669,14 @@ for i in range(len(peaks)):
              color = 'gray', alpha=0.8)
     trials_pre.append((RTA[starting_idx[i]:ending_idx[i]])+offset[i])
     
-plt.title("All Traces EX001 MEP POST ActSCS")
+plt.title("All Traces EX001 MEP POST SCS")
 plt.xlabel("ms")
 plt.ylabel("V")
-plt.savefig("EX001_TMS_POST_ActSCS.png", format="png", dpi=1200, bbox_inches = 'tight')
+plt.savefig("EX001_TMS_POST_SCS.png", format="png", dpi=1200, bbox_inches = 'tight')
 
 
+    
+    
 #%% EX001 MEP Identification
 import matplotlib.pyplot as plt
 
@@ -756,7 +691,7 @@ previous_list = []
 post_list = []
 max_idx_list = []
 MEPS = []
-offset = np.linspace(0,0.003,30)
+offset = np.linspace(0,0.002,30)
 fig, ax = plt.subplots(figsize=(7,12))
 
 
@@ -775,7 +710,7 @@ for i in range(len(trials_pre)):
     if len(lowerPeaks) == 0:
         lowerPeaks = np.zeros((2,2))
         
-    plt.figure(1)
+    plt.figure(6, figsize=(7,12))
     plt.plot(time, cb , color="gray", linewidth=0.8, alpha=0.7)
     #plt.plot(higherPeaks[:,0], higherPeaks[:,1], 'ro')
     #plt.plot(lowerPeaks[:,0], lowerPeaks[:,1], 'ko')
@@ -835,7 +770,7 @@ for i in range(len(trials_pre)):
     
     if value_pre >= 50 or value_post >= 50:
 
-        plt.plot(time[max_index], cb[max_index], "x", color = "red", markersize = 5)
+        plt.plot(time[max_index], cb[max_index], "x", color = "red", markersize = 10)
         
         onset_line = true_idx[i]
         end_line = endddd[i]
@@ -847,14 +782,13 @@ for i in range(len(trials_pre)):
         max_value = cb[max_index]
         min_value = min(np.array(cb[onset_line:end_line]))
         mep = ((max_value-min_value) * (10**6))
-        #print("AMPS MEP", (max_value-min_value) * (10**6))
         latency = time[onset_line]
-
+        #print("AMPS MEP", (max_value-min_value) * (10**6))
         amplitude_pre.append([mep, latency])
 
     
 
-    plt.title("EX001 POST MEP Identification: ActSCS")
+    plt.title("EX001 POST MEP Identification: SCS")
     plt.xlabel("ms")
     plt.ylabel("V")
     ax = plt.gca()
@@ -868,7 +802,7 @@ for i in range(len(trials_pre)):
     #plt.show()
 
 print("_______________________________________")
-print("EX001 MEP Amplitude Post Test: ActSCS")
+print("EX001 MEP Amplitude Post Test: SCS")
 
 amp_df_pre = pd.DataFrame(amplitude_pre, columns=['MEP', 'Time'])
 means_pre = amp_df_pre.mean()
@@ -881,7 +815,7 @@ print(pers)
 
 ax.text(75, 0.0017, amp + "\n" + pers, bbox=dict(facecolor='white'))
 
-plt.savefig("EX001_20230726_TMS_POST_ActSCS.png", format="png", dpi=1200, bbox_inches = 'tight')
+plt.savefig("EX001_20230721_TMS_POST_SCS.png", format="png", dpi=1200, bbox_inches = 'tight')
 
 
 #%%EX002 PRE DERIVATIVE
@@ -896,8 +830,8 @@ othertest = []
 
 for i in range(len(trials_pre)):
     cb = trials_pre[i]
-    idx_start = 10
-    #idx_start = max_idx_list[i]-110
+    #idx_start = 10
+    idx_start = max_idx_list[i]-80
    # print(max_idx_list)
     idx_end = max_idx_list[i]
     y_diff = cb[idx_start:idx_end]
@@ -906,8 +840,8 @@ for i in range(len(trials_pre)):
     numpyDiff = np.diff(y_diff)/np.diff(time)
     
     
-    #idx_end_post = max_idx_list[i]+110
-    idx_end_post = 330
+    idx_end_post = max_idx_list[i]+80
+    #idx_end_post = 330
     idx_start_post = max_idx_list[i]
     y_post = cb[idx_start_post:idx_end_post]
     
@@ -918,7 +852,7 @@ for i in range(len(trials_pre)):
     
     numpyDiff_post = np.diff(flipped)/np.diff(time_post)
     
-    idx3 = np.where(abs(numpyDiff_post)>0.000014)[0][0]
+    idx3 = np.where(abs(numpyDiff_post)>0.000013)[0][0]
     endddd.append(idx_end_post-idx3)
     plt.figure(25)
     time_post = np.linspace(0, total_time_post*1000, len(y_post)-1) 
@@ -929,6 +863,6 @@ for i in range(len(trials_pre)):
     plt.figure(22)
     time = np.linspace(0, total_time*1000, len(y_diff)-1) 
     plt.plot(time,numpyDiff, color = "gray", alpha = 0.5)    
-    idx2 = np.where(abs(numpyDiff)>0.000014)[0][0]
+    idx2 = np.where(abs(numpyDiff)>0.000013)[0][0]
     plt.plot(time[idx2], numpyDiff[idx2], "x", color="red")
     true_idx.append(idx_start+idx2) 

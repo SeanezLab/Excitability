@@ -2,6 +2,7 @@
 Created on Thu Jul 27 14:41:25 2023
 
 @author: Rachel Hawthorn
+
 """
 import glob
 import pandas as pd
@@ -27,6 +28,7 @@ def readcsvs_concatdf(csv_files):
             #print("Muscle Names", muscle_names)
 
     for file in csv_files:
+        print("Running:", file)
         if "sensor" in file:
             print(" ")
         else:   
@@ -71,3 +73,5 @@ def trainingDFs(key_paths):
         
     print("All done ✨")
     return df_ActSCS, idxs_ActSCS, df_ActRest, idxs_ActRest, df_SCS, idxs_SCS 
+
+print("Setup helper functions: DONE")
