@@ -7,8 +7,8 @@ import re
 import numpy as np
 from helper_preprocess import trainingDFs, readcsvs_concatdf
 
-#rootdir = "C:\\Users\\Lab\\Box\\Seanez_Lab\\SharedFolders\\RAW DATA\\Excitability"
-rootdir = "C:\\Users\\marie\\Box\\Seanez_Lab\\SharedFolders\\RAW DATA\\Excitability"
+rootdir = "C:\\Users\\Lab\\Box\\Seanez_Lab\\SharedFolders\\RAW DATA\\Excitability"
+#rootdir = "C:\\Users\\marie\\Box\\Seanez_Lab\\SharedFolders\\RAW DATA\\Excitability"
 
 subject_folders = os.listdir(rootdir)
 subject_keypaths = [[]] * len(subject_folders)
@@ -16,16 +16,14 @@ subject_keypaths = [[]] * len(subject_folders)
 for i in range(len(subject_folders)):
     #subject_keypaths[i] = 'test'
     subject_dir = os.path.join(rootdir, subject_folders[i])
-    print(subject_dir)
+    #print(subject_dir)
     for subject_dir, dirs, files in os.walk(subject_dir):
         for subdir in dirs:
-            print(subdir)
+            #print(subdir)
             subject_keypaths[i].append(os.path.join(subject_dir, subdir))
-            print(os.path.join(subject_dir, subdir))
+            #print(os.path.join(subject_dir, subdir))
             
-#work on adding keypaths to different sections of the list
-
-
+#work on adding keypaths to different sections of the lis
 SID_list = []
 key_paths = []
 for rootdir, dirs, files in os.walk(rootdir):
@@ -43,8 +41,8 @@ for rootdir, dirs, files in os.walk(rootdir):
 print("Walking through keypaths.")
 #print(key_paths)
 #print(SID_list)
-df_ActSCS, idxs_ActSCS, df_ActRest, idxs_ActRest, df_SCS, idxs_SCS  = trainingDFs(key_paths)
-print("Pulled all necessary dataframes.")
+#df_ActSCS, idxs_ActSCS, df_ActRest, idxs_ActRest, df_SCS, idxs_SCS  = trainingDFs(key_paths)
+#print("Pulled all necessary dataframes.")
 
 #%%
 print("Test. Getting fwave and tms indices")
