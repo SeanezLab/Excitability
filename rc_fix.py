@@ -15,7 +15,7 @@ def get_npy_file_paths(dataDir):
                 npy_file_paths.append(npy_file_path)
 
     return npy_file_paths
-def process_data_and_plot(dataDir, fileName, sensors_csv_path, amps):
+def process_data_and_plot(dataDir, fileName, sensors_csv_path, amps, trigger_height):
 
     output_folder = os.path.join(dataDir, 'Plots')
     subject_pattern = r'RCT(\d{3})'
@@ -31,6 +31,7 @@ def process_data_and_plot(dataDir, fileName, sensors_csv_path, amps):
             # Extract and save the trial
             trial = trial_match.group()
     SID_trial = subject_id + trial
+    print(SID_trial)
 
     # Check if the output folder exists, and create it if not
     if not os.path.exists(output_folder):
@@ -61,12 +62,14 @@ def process_data_and_plot(dataDir, fileName, sensors_csv_path, amps):
     data[:, 0:nMuscles] = data[:, 0:nMuscles] * 1000  # Convert from V to mV
 
     # Finding peaks in the trigger channel data
-    peaks, _ = find_peaks(data[:, trigChan-1], height=0.03) 
+    peaks, _ = find_peaks(data[:, trigChan-1], height=trigger_height, distance = 50) 
     peaks = peaks[-120:] #Used to ignore any extra peaks at the start of recording
     peakLoc = peaks[::2] #Only want first peak of paired pulses
 
     plt.plot(data[:, trigChan-1],'gray',alpha=0.6)
     plt.plot(peakLoc, data[:, trigChan-1][peakLoc], 'x', color='green')
+    #plt.plot(peaks, data[:, trigChan-1][peaks], 'o', color='blue')
+
     #plt.show()
 
     # Muscle color coding
@@ -272,21 +275,27 @@ def find_sensors_csv_path(dataDir):
 # SELECT SUBJECT data directory
 #dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT001\RCT001_20240116'
 #amps = [230, 190, 150, 110, 70, 30]
+#trigger_height = 0.03
 
-#dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT002\RCT002_20240118'
-#amps = [200, 166, 132, 98, 64, 30]
+# dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT002\RCT002_20240118'
+# amps = [200, 166, 132, 98, 64, 30]
+# trigger_height = 0.01
 
-#dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT003\RCT003_20240119'
-#amps = [140, 117, 94, 71, 48, 25]
+# dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT003\RCT003_20240119'
+# amps = [140, 117, 94, 71, 48, 25]
+# trigger_height = 0.05
 
-#dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT004\RCT004_20240125'
-#amps = [150, 126.5, 103, 79.5, 56, 32.5]
+# dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT004\RCT004_20240125'
+# amps = [150, 126.5, 103, 79.5, 56, 32.5]
+# trigger_height = 0.01
 
-dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT005\RCT005_20240126'
+# dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT005\RCT005_20240126'
+# amps = [140, 119, 98, 77, 56, 35]
+# trigger_height = 0.01
+
+dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT006\RCT006_20240126'
 amps = [140, 119, 98, 77, 56, 35]
-
-#dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT006\RCT006_20240126'
-#amps = [140, 119, 98, 77, 56, 35]
+trigger_height = 0.01
 
 ###########################################################################################################
 
@@ -302,6 +311,6 @@ for i in range(len(filenames_list)-1):
     npy_files = get_npy_file_paths(dataDir)
     fileName = filenames_list[i]
     sensors_csv_path = find_sensors_csv_path(dataDir)
-    process_data_and_plot(dataDir, fileName, sensors_csv_path, amps)
+    process_data_and_plot(dataDir, fileName, sensors_csv_path, amps, trigger_height)
     plt.close()
 
