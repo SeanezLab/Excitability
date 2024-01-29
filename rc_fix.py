@@ -15,7 +15,7 @@ def get_npy_file_paths(dataDir):
                 npy_file_paths.append(npy_file_path)
 
     return npy_file_paths
-def process_data_and_plot(dataDir, fileName, sensors_csv_path):
+def process_data_and_plot(dataDir, fileName, sensors_csv_path, amps):
 
     output_folder = os.path.join(dataDir, 'Plots')
     subject_pattern = r'RCT(\d{3})'
@@ -26,6 +26,7 @@ def process_data_and_plot(dataDir, fileName, sensors_csv_path):
         # Extract and save the subject ID
         subject_id = subject_match.group()
     trial_match = re.search(trial_pattern, fileName)
+    trial = ""
     if trial_match:
             # Extract and save the trial
             trial = trial_match.group()
@@ -43,7 +44,7 @@ def process_data_and_plot(dataDir, fileName, sensors_csv_path):
     sensors = pd.read_csv(sensors_csv_path, header=None)
     muscles = sensors.iloc[:, 2].tolist()
     muscles = muscles[:-1]
-    amps = [140, 117, 94, 71, 48, 25] #read in from stims file
+    amps = amps #[140, 117, 94, 71, 48, 25] #read in from stims file
 
 
     # Setup Parameters
@@ -269,12 +270,24 @@ def find_sensors_csv_path(dataDir):
     return None
 
 # SELECT SUBJECT data directory
-dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT001\RCT001_20240116'
+#dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT001\RCT001_20240116'
+#amps = [230, 190, 150, 110, 70, 30]
+
 #dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT002\RCT002_20240118'
+#amps = [200, 166, 132, 98, 64, 30]
+
 #dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT003\RCT003_20240119'
+#amps = [140, 117, 94, 71, 48, 25]
+
 #dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT004\RCT004_20240125'
-#dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT005\RCT005_20240126'
+#amps = [150, 126.5, 103, 79.5, 56, 32.5]
+
+dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT005\RCT005_20240126'
+amps = [140, 119, 98, 77, 56, 35]
+
 #dataDir = r'C:\Users\Lab\Box\Seanez_Lab\SharedFolders\RAW DATA\RCT\RCT006\RCT006_20240126'
+#amps = [140, 119, 98, 77, 56, 35]
+
 ###########################################################################################################
 
 csv_files = [file for file in os.listdir(dataDir) if file.endswith('.csv')]
@@ -289,5 +302,6 @@ for i in range(len(filenames_list)-1):
     npy_files = get_npy_file_paths(dataDir)
     fileName = filenames_list[i]
     sensors_csv_path = find_sensors_csv_path(dataDir)
-    process_data_and_plot(dataDir, fileName, sensors_csv_path)
+    process_data_and_plot(dataDir, fileName, sensors_csv_path, amps)
+    plt.close()
 
